@@ -1,10 +1,16 @@
-const sq = require('sequelize')
+const { Sequelize } = require('sequelize')
 const db = require('../config/database/db')
 const model = require('../config/model/index-model')
 
-const controller = {}
+const usersController = {}
 
-controller.getAll = async function (req, res) {
+function getUser(username) {
+    return model.Username.findOne({
+        where: { username: username }
+    })
+}
+
+usersController.getAll = async function (req, res) {
     try {
         let users = await model.Username.findAll({
             attributes: [
@@ -30,35 +36,32 @@ controller.getAll = async function (req, res) {
     }
 }
 
-controller.insertUser = async function (req, res) {
+usersController.insertUser = async function (req, res) {
     const username = req.body.username
     const hashed_password = req.body.password
     try {
-        const result = await db.transaction(async (t) => {
-            const usernames = await model.Username.create({username})
+        const result = await db.transaction(async () => {
+            await model.Username.create({username})
 
-            const uuid = await model.Username.findOne({
-                where: { username: username }
-            })
-            if (!uuid) { return null}
-            // console.log('uuid = ', uuid);
+            const uuid = await getUser(username)
+            if (!uuid) {throw("System error to input user and password")}
 
             let UUID = uuid.uuid
-            const passwords = await model.Password.create({uuid: UUID ,hashed_password})
+            await model.Password.create({uuid: UUID ,hashed_password})
             
-            return username, passwords
+            return `success added ${username} to database`
         })
         res.status(200).json({
-            message: 'User added to database',
+            message: `User added to database`,
             data: result
         })
     } catch (err) {
         res.status(404).json({
             loc: 'usersController(insertUser)',
-            error: err.original
+            error: err
         })
     }
     
 }
 
-module.exports = controller
+module.exports = usersController
