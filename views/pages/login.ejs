@@ -1,0 +1,45 @@
+<%- include('../partials/head') %>
+
+    <body>
+        <%- include('../partials/header') %>
+            <form>
+                <h2>Login</h2>
+                <label for="username">Username</label>
+                <input type="text" name="username" required>
+                <label for="password">Password</label>
+                <input type="password" name="password" required>
+                <button type="submit">Login</button>
+            </form>
+
+            <script>
+                if(user != null){
+                    location.assign('/users/logout')
+                }
+
+                const form = document.querySelector("form")
+
+                form.addEventListener("submit", async (e) => {
+                    e.preventDefault()
+                    const username = form.username.value
+                    const password = form.password.value
+
+                    try {
+                        const res = await fetch('/users/login', {
+                            method: 'POST',
+                            body: JSON.stringify({ username, password }),
+                            headers: { 'Content-Type': 'application/json' }
+                        })
+                        const data = await res.json()
+                        console.log(data);
+
+                        if (!data.error) {
+                            location.assign('/users/getAll')
+                        }
+                    } catch (err) {
+                        console.log('login error: ', err);
+                    }
+                })
+            </script>
+
+            <%- include('../partials/footer') %>
+    </body>
