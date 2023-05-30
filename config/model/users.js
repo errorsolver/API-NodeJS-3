@@ -24,5 +24,5 @@ let users = db.define('users', {
 users.sync({ alter: true })
     .then(console.log('User Table synchronized'))
     .catch(err => {console.error('\nSync users error: ', err.message,'\n',err.parent)})
-// users.removeAtribute = id
+
 module.exports = users
